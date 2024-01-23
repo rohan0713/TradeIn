@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,10 +32,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -49,26 +48,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.social.tradein.R
 import com.social.tradein.presentation.viewmodel.CoinViewModel
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import com.social.tradein.data.models.toCoin
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 @Composable
-fun HomeCompose(vm: CoinViewModel) {
+fun HomeCompose(vm: CoinViewModel, navController: NavController) {
 
-    val scope = rememberCoroutineScope()
     val list by vm.coins.observeAsState(initial = emptyList())
 
     val color1 = colorResource(id = R.color.card)
     val color2 = colorResource(id = R.color.background)
 
     val brush = Brush.horizontalGradient(
-        colors = listOf(color2, color1),
+        colors = listOf(color2, color1)
     )
 
     Box(
@@ -308,7 +301,9 @@ fun HomeCompose(vm: CoinViewModel) {
                     content = {
                         Log.d("size", list.size.toString())
                         items(if (list.isNotEmpty()) list.subList(0, 100) else list) { coin ->
-                            CoinItem(brush, coin.name, coin.symbol, coin.is_active)
+                            CoinItem(brush, coin.id ,coin.name, coin.symbol, coin.is_active, coin.rank) {
+                                navController.navigate("chart/${coin.id}")
+                            }
                         }
                     }, modifier = Modifier
                         .fillMaxWidth()
@@ -330,18 +325,31 @@ fun HomeCompose(vm: CoinViewModel) {
 
 
 @Composable
-fun CoinItem(brush: Brush, name: String, symbol: String, isActive: Boolean) {
+fun CoinItem(
+    brush: Brush,
+    id : String,
+    name: String,
+    symbol: String,
+    isActive: Boolean,
+    rank: Int,
+    function: (String) -> Unit
+) {
+
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .background(brush)
+            .clickable {
+                println(id)
+                function(id)
+            }
     ) {
 
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(100.dp),
+                .height(90.dp),
             colors = CardDefaults.cardColors(
                 containerColor = colorResource(id = R.color.card)
             ),
@@ -356,23 +364,24 @@ fun CoinItem(brush: Brush, name: String, symbol: String, isActive: Boolean) {
                     .padding(20.dp)
             ) {
 
-                Image(
-                    painter = painterResource(id = R.drawable.ic_android),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(60.dp)
-                        .clip(RoundedCornerShape(20.dp))
+                Text(
+                    text = "$rank)", fontSize = 16.sp, color = Color.White,
+                    modifier = Modifier.padding(top = 5.dp)
                 )
 
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 5.dp, start = 15.dp),
+                        .padding(top = 3.dp, start = 10.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Column() {
-                        Text(text = name, fontSize = 16.sp, color = Color.White)
+                        Text(
+                            text = name,
+                            fontSize = 18.sp,
+                            color = Color.White,
+                            fontWeight = FontWeight.ExtraBold
+                        )
                         Spacer(modifier = Modifier.size(5.dp))
                         Text(text = symbol, fontSize = 14.sp, color = Color.LightGray)
                     }

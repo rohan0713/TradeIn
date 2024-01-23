@@ -13,7 +13,7 @@ class CoinRepository : CoinApiInterface {
         return RetrofitClient.api.getCoins()
     }
 
-    override suspend fun getCoinDetails(symbol: String): Response<CoinDetailsResponse> {
-        return RetrofitClient.api.getCoinDetails(symbol)
+    override suspend fun getCoinDetails(URL: String): Response<CoinDetailsResponse> {
+        return RetrofitClient.api.getCoinDetails(URL)
     }
 }

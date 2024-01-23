@@ -35,9 +35,9 @@ class CoinViewModel(
         }
     }
 
-    suspend fun fetchCoinDetails(symbol: String) {
+    suspend fun fetchCoinDetails(URL: String) {
         viewModelScope.launch {
-            val response = repository.getCoinDetails(symbol)
+            val response = repository.getCoinDetails(URL)
             if(response.isSuccessful){
                 _coinDetails.postValue(response.body())
             }
